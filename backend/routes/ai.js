@@ -1,12 +1,14 @@
 const router = require("express").Router();
 
-// ✅ TEST ROUTE
+// =====================
+// 🧪 TEST ROUTE
+// =====================
 router.get("/", (req, res) => {
-  res.json({ message: "AI route working 🤖" });
+  res.json({ message: "AI Demo Route Working ✅" });
 });
 
 // =====================
-// 🤖 AI GENERATE FIXED
+// 🤖 DEMO GENERATE ROUTE
 // =====================
 router.post("/generate", async (req, res) => {
   const { idea } = req.body;
@@ -18,7 +20,7 @@ router.post("/generate", async (req, res) => {
       files: [
         {
           path: "index.html",
-          content: "<h1>Missing OpenAI Key</h1>"
+          content: "<h1>❌ Missing API Key (Demo Mode)</h1>"
         }
       ]
     });
@@ -35,22 +37,13 @@ router.post("/generate", async (req, res) => {
         model: "gpt-4o-mini",
         messages: [
           {
-            role: "system",
-            content:
-              "You ONLY return valid JSON. No text, no explanation. Format must be: [ {\"path\":\"index.html\",\"content\":\"...\"} ]"
-          },
-          {
             role: "user",
-            content: `Create a working web app as JSON files only.
-
-Idea: ${idea}
-
-Return ONLY JSON array like:
+            content: `Return ONLY JSON like:
 [
-  { "path": "index.html", "content": "<h1>Hello</h1>" },
-  { "path": "style.css", "content": "body{font-family:sans-serif;}" },
-  { "path": "script.js", "content": "console.log('app running')" }
-]`
+  { "path": "index.html", "content": "<h1>${idea}</h1>" }
+]
+
+Idea: ${idea}`
           }
         ]
       })
@@ -58,41 +51,31 @@ Return ONLY JSON array like:
 
     const data = await response.json();
 
-    let raw = data?.choices?.[0]?.message?.content || "";
+    const text = data?.choices?.[0]?.message?.content;
 
-    console.log("AI RAW OUTPUT:", raw);
+    console.log("RAW AI OUTPUT:", text);
 
     let files;
 
     try {
-      files = JSON.parse(raw);
-    } catch (err) {
-      // 🔥 SAFE FALLBACK (prevents {"files":[]})
+      files = JSON.parse(text);
+    } catch (e) {
       files = [
         {
           path: "index.html",
-          content: raw || "<h1>AI Failed to Generate</h1>"
-        }
-      ];
-    }
-
-    // 🔥 FINAL SAFETY CHECK
-    if (!Array.isArray(files)) {
-      files = [
-        {
-          path: "index.html",
-          content: String(files)
+          content: text || "<h1>AI Demo Fallback</h1>"
         }
       ];
     }
 
     res.json({ files });
-  } catch (error) {
+
+  } catch (err) {
     res.json({
       files: [
         {
           path: "index.html",
-          content: "Error: " + error.message
+          content: "ERROR: " + err.message
         }
       ]
     });
