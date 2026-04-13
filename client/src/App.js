@@ -4,7 +4,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
 
-  const API = "http://localhost:3000";
+  const API = "https://bb-general-plus-ai-empire-os.onrender.com";
 
   const generateApp = async () => {
     const res = await fetch(API + "/api/ai/generate", {
